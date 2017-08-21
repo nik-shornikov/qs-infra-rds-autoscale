@@ -1,9 +1,18 @@
 version: '3'
 services:
   terraform:
-    build: .
+    build: terraform
     volumes:
       - ${HOME}/.aws/:/root/.aws/:ro
+      - /tmp/:/tmp/
     environment:
       PROFILE: $AWS_DEFAULT_PROFILE
-    command: /terraform.sh
+      BUILD: $BUILD
+  apex:
+    build: apex
+    volumes:
+      - ${HOME}/.aws/:/root/.aws/:ro
+      - /tmp/:/tmp/
+    environment:
+      PROFILE: $AWS_DEFAULT_PROFILE
+      BUILD: $BUILD

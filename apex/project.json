@@ -1,0 +1,5 @@
+{
+  "description": "rds autoscaling function",
+  "name": "python",
+  "role": "arn:aws:iam::111111111111:role/apex_lambda_function"
+}

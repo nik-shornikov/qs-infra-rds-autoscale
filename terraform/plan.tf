@@ -95,3 +95,31 @@ resource "aws_sns_topic_subscription" "lambda" {
   protocol  = "lambda"
   endpoint  = "${aws_lambda_function.report.arn}"
 }
+
+
+resource "aws_iam_role_policy" "policy" {
+  name = "inventory-db-read-scale-policy"
+  role = "${aws_iam_role.role.id}"
+  policy = <<EOF
+{
+  "Statement": [
+    {
+      "Action": "logs:CreateLogGroup",
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    }
+  ],
+  "Version": "2012-10-17"
+}
+EOF
+}

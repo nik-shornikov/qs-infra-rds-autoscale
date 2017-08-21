@@ -1,6 +1,8 @@
 import json
 
 def handle(event, context):
-  print("processing event")
-  message = json.loads(event['Records'][0]['Sns']['Message'])
-  return message["AlarmName"]
+  for record in event['Records']:
+    print("processing event")
+    message = json.loads(record['Sns']['Message'])
+    print(message["AlarmName"])
+  return True

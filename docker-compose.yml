@@ -6,4 +6,5 @@ services:
       - ${HOME}/.aws/:/root/.aws/:ro
     environment:
       AWS_DEFAULT_PROFILE: $AWS_DEFAULT_PROFILE
+      VARS_FILE: qs.auto.tfvars
     command: /terraform.sh

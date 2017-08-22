@@ -2,4 +2,4 @@
 
 mkdir /tmp/$BUILD
 
-apex build report > /tmp/$BUILD/report.zip
+apex build scale > /tmp/$BUILD/scale.zip

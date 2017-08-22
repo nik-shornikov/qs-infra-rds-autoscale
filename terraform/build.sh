@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
 
-while [ ! -f /tmp/$BUILD/report.zip ];
+while [ ! -f /tmp/$BUILD/scale.zip ];
 do
-  echo 'waiting for report package'
+  echo 'waiting for scale package'
   sleep 2
 done;
 

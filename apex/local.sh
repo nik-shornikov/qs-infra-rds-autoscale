@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python-lambda-local -f $1 $2 $3
+source ../../event.env && python-lambda-local -f $1 $2 $3

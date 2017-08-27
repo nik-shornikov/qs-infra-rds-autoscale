@@ -3,6 +3,30 @@ import re
 import boto3
 import os
 
+from base64 import b64decode
+from urllib2 import Request, urlopen, URLError, HTTPError
+
+
+def notif(message, webhook):
+    slack_message = {
+        'channel': 'systemsmonitoring',
+        'text': message,
+        'username': 'inventory db read scaling',
+        'icon_emoji': ':aws:'
+    }
+
+    req = Request(webhook, json.dumps(slack_message))
+
+    try:
+        response = urlopen(req)
+        response.read()
+        print("Message posted to %s", slack_message['channel'])
+    except HTTPError as e:
+        print("Request failed: %d %s", e.code, e.reason)
+    except URLError as e:
+        print("Server connection failed: %s", e.reason)
+
+    return True
 
 def handle(event, context):
     if 'Records' not in event:
@@ -43,6 +67,16 @@ def handle(event, context):
             print("alarm did not transition from OK to ALARM -- performing dry run")
             dry_run = True
 
+        webhook = os.getenv('webhook', '')
+
+        no_notif = False
+
+        if webhook == '':
+            print("webhook is empty -- there will be no slack notification")
+            no_notif = True
+        else:
+            print("slack notification will be issued")
+
         if 'TopicArn' not in record['Sns']:
             print("could not parse topic arn")
             return False
@@ -76,31 +110,67 @@ def handle(event, context):
             print('received alarm for wrong cluster')
             return False
 
-        print("%s will result in read replica %s being brought %s in %s" % (alarm, identifier, action, cluster))
+        report = "%s will result in read replica %s being brought %s in %s" % (alarm, identifier, action, cluster)
+
+        print(report)
 
         client = boto3.client('rds', region_name=region)
 
         cluster_members = client.describe_db_clusters(DBClusterIdentifier=cluster)['DBClusters'][0]['DBClusterMembers']
 
-        el = [x for x in cluster_members if x['DBInstanceIdentifier'] == (cluster + "-" + identifier)]
+        source_instance = cluster_members[0]['DBInstanceIdentifier']
+
+        print("%s will serve as source instance" % source_instance)
+
+        full_identifier = (cluster + "-" + identifier)
+
+        el = [x for x in cluster_members if x['DBInstanceIdentifier'] == full_identifier]
 
         if action == 'down':
             print("looking to bring down read replica")
             if el:
-                print("found %s to bring down" % (cluster + "-" + identifier))
+                print("found %s to bring down" % full_identifier)
                 if not dry_run:
                     print("not in dry run mode -- bringing instance down")
+                    response = client.delete_db_instance(
+                        DBInstanceIdentifier=full_identifier,
+                        SkipFinalSnapshot=True
+                    )
+                    print(response)
+                    if not no_notif:
+                        notif(report, webhook)
                 else:
                     print("dry run mode -- not bringing instance down")
+            else:
+                print("found no %s to bring down" % full_identifier)
+
         elif action == 'up':
             print("looking to bring up read replica")
             if not el:
-                print("found no instance %s already up" % (cluster + "-" + identifier))
+                print("found no instance %s already up" % full_identifier)
                 if not dry_run:
                     print("not in dry run mode -- bringing instance up")
+                    response = client.create_db_instance(
+                        DBInstanceIdentifier=full_identifier,
+                        DBInstanceClass='db.t2.small',
+                        Engine='aurora',
+                        AutoMinorVersionUpgrade=True,
+                        PubliclyAccessible=True,
+                        Tags=[
+                            {
+                                'Key': 'reporter',
+                                'Value': 'Nikolai Shornikov'
+                            }
+                        ],
+                        DBClusterIdentifier=cluster,
+                        PromotionTier=2
+                    )
+                    print(response)
+                    if not no_notif:
+                        notif(report, webhook)
                 else:
                     print("dry run mode -- not bringing instance up")
             else:
-                print("found %s up already" % (cluster + "-" + identifier))
+                print("found %s up already" % full_identifier)
 
     return True

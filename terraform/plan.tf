@@ -42,7 +42,7 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   count               = "${length(var.alarms)}"
   alarm_name          = "inventory-db-read-scale-${lookup(var.alarms[count.index], "do")}"
   comparison_operator = "${lookup(var.alarms[count.index], "comparison")}"
-  evaluation_periods  = "12"
+  evaluation_periods  = "9"
   metric_name         = "CPUCreditBalance"
   namespace           = "AWS/RDS"
   period              = "300"
@@ -70,6 +70,7 @@ resource "aws_lambda_function" "scale" {
     variables = {
       cluster = "${var.cluster}"
       webhook = "${var.webhook}"
+      region = "${var.region}"
     }
   }
 }
@@ -122,6 +123,15 @@ resource "aws_iam_role_policy" "policy" {
       "Action": [
         "logs:CreateLogStream",
         "logs:PutLogEvents"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
+        "rds:*"
       ],
       "Effect": "Allow",
       "Resource": [

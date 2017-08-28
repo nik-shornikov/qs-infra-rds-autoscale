@@ -1,10 +1,12 @@
+#! /usr/bin/env python3
+
 import json
 import re
 import boto3
 import os
 
-from base64 import b64decode
-from urllib2 import Request, urlopen, URLError, HTTPError
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
 
 def notif(message, webhook):
@@ -17,6 +19,8 @@ def notif(message, webhook):
 
     req = Request(webhook, json.dumps(slack_message))
 
+    
+
     try:
         response = urlopen(req)
         response.read()
@@ -27,6 +31,7 @@ def notif(message, webhook):
         print("Server connection failed: %s", e.reason)
 
     return True
+
 
 def handle(event, context):
     if 'Records' not in event:

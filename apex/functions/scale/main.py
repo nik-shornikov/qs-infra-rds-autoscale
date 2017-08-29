@@ -17,9 +17,7 @@ def notif(message, webhook):
         'icon_emoji': ':aws:'
     }
 
-    req = Request(webhook, json.dumps(slack_message))
-
-    
+    req = Request(webhook, json.dumps(slack_message).encode('utf8'))
 
     try:
         response = urlopen(req)
@@ -105,11 +103,13 @@ def handle(event, context):
             print("could not parse alarm metric dimensions")
             return False
 
-        if message['Trigger']['Dimensions'][1]['name'] != 'DBClusterIdentifier':
+        cluster_dimension = [x for x in message['Trigger']['Dimensions'] if x['name'] == 'DBClusterIdentifier']
+
+        if not cluster_dimension or 'value' not in cluster_dimension[0]:
             print('could not find cluster name')
             return False
 
-        cluster = message['Trigger']['Dimensions'][1]['value']
+        cluster = cluster_dimension[0]['value']
 
         if cluster != os.getenv('cluster'):
             print('received alarm for wrong cluster')

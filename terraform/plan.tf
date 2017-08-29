@@ -46,7 +46,7 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   metric_name         = "CPUCreditBalance"
   namespace           = "AWS/RDS"
   period              = "300"
-  statistic           = "Minimum"
+  statistic           = "Maximum"
   threshold           = "${lookup(var.alarms[count.index], "threshold")}"
 
   dimensions {
@@ -65,6 +65,7 @@ resource "aws_lambda_function" "scale" {
   filename = "/tmp/${var.build}/scale.zip"
   source_code_hash = "${base64sha256(file("/tmp/${var.build}/scale.zip"))}"
   role = "${aws_iam_role.role.arn}"
+  timeout = 45
 
   environment {
     variables = {

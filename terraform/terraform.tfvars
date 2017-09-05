@@ -2,23 +2,13 @@ cluster = "ioninventory-db-instance-cluster"
 alarms  = [
   {
     comparison = "LessThanOrEqualToThreshold",
-    threshold  = "50",
-    do         = "up-3"
-  },
-  {
-    comparison = "LessThanOrEqualToThreshold",
-    threshold  = "100",
+    threshold  = "20",
     do         = "up-2"
   },
   {
     comparison = "LessThanOrEqualToThreshold",
-    threshold  = "150",
+    threshold  = "30",
     do         = "up-1"
-  },
-  {
-    comparison = "GreaterThanOrEqualToThreshold",
-    threshold  = "170",
-    do         = "down-3"
   },
   {
     comparison = "GreaterThanOrEqualToThreshold",

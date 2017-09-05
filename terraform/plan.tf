@@ -42,11 +42,11 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   count               = "${length(var.alarms)}"
   alarm_name          = "inventory-db-read-scale-${lookup(var.alarms[count.index], "do")}"
   comparison_operator = "${lookup(var.alarms[count.index], "comparison")}"
-  evaluation_periods  = "9"
+  evaluation_periods  = "2"
   metric_name         = "CPUCreditBalance"
   namespace           = "AWS/RDS"
-  period              = "300"
-  statistic           = "Maximum"
+  period              = "900"
+  statistic           = "Minimum"
   threshold           = "${lookup(var.alarms[count.index], "threshold")}"
 
   dimensions {
